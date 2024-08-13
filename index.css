@@ -45,7 +45,7 @@ h1 {
 
 button {
     padding: 15px;
-    background-color: #007BFF;
+    background-color: #020b14;
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -60,6 +60,12 @@ button:hover {
 
 button.tecla-grande {
     grid-column: span 3;
+    background-color: rgb(2, 63, 2);
+    color: #fff;
+}
+
+button.tecla-apagar{
+    background-color: rgb(134, 0, 0);
 }
 
 #resultado {

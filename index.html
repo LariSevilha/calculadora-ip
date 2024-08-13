@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de IP</title>
     <link rel="stylesheet" href="index.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <script src="index.js" defer></script>
 </head>
 
@@ -25,8 +26,8 @@
             <button onclick="adicionarNumero('9')">9</button>
             <button onclick="adicionarNumero('0')">0</button>
             <button onclick="adicionarPonto()">.</button>
-            <button onclick="apagarUltimoCaractere()">Apagar</button>
-            <button class="tecla-grande" onclick="calcularIP()">Calcular</button>
+            <button class="tecla-apagar" onclick="apagarUltimoCaractere()"><i class="fas fa-backspace"></i></button>
+            <button class="tecla-grande" onclick="calcularIP()"><i class="fas fa-calculator"></i> Calcular</button>
         </div>
         <div id="resultado"></div>
     </div>
