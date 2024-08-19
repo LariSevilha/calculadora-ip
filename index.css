@@ -85,26 +85,35 @@ button.tecla-apagar {
 
 #resultado p {
     margin: 5px 0;
-} 
+}
+
 .modal {
     display: none; 
-    position: fixed; 
-    z-index: 1; 
+    position: fixed;
+    z-index: 1;
+    /* Fica na frente de outros elementos */
     left: 0;
     top: 0;
-    width: 100%;   
-    height: 100%;  
-    overflow: auto;  
-    background-color: rgba(0, 0, 0, 0.5); 
+    width: 100%;
+    /* Largura total */
+    height: 100%;
+    /* Altura total */
+    overflow: auto;
+    /* Habilita rolagem se necessário */
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Fundo escuro com transparência */
 }
 
 .modal-content {
     background-color: #fefefe;
-    margin: 15% auto;  
+    margin: 15% auto;
+    /* Centraliza verticalmente e horizontalmente */
     padding: 20px;
     border: 1px solid #888;
-    width: 80%; 
-    max-width: 500px;  
+    width: 80%;
+    /* Largura do conteúdo */
+    max-width: 500px;
+    /* Largura máxima */
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
@@ -153,4 +162,11 @@ button.tecla-apagar {
     background-color: #0056b3;
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+h3 {
+    color: rgb(231, 41, 41);
+}
+.s{
+    color: red;
 }

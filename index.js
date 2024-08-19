@@ -119,7 +119,6 @@ function calcularHostsValidos(classe) {
     }
 }
 
-/* Funções de Sub-rede */
 function calcularSubredes() {
     const ip = document.getElementById('ip').value;
     const subnetCount = parseInt(document.getElementById('subnetCount').value);
@@ -134,41 +133,67 @@ function calcularSubredes() {
     const subnetBits = Math.ceil(Math.log2(subnetCount));
     const newSubnetMask = calcularNovaMascaraSubrede(classe, subnetBits);
 
-    const networkAddress = calcularEnderecoRede(octetos, newSubnetMask);
-    const broadcastAddress = calcularEnderecoBroadcast(octetos, newSubnetMask);
-    const ipInicial = calcularIPInicial(networkAddress);
-    const ipFinal = calcularIPFinal(broadcastAddress);
+    const resultados = [];
+    const increment = 256 - newSubnetMask[3];
+    let currentNetworkAddress = calcularEnderecoRede(octetos, newSubnetMask);
 
-    alert(`
-        Novas Sub-redes: ${subnetCount}
-        Nova Máscara de Sub-rede: ${newSubnetMask.join('.')}
-        Endereço de Rede: ${networkAddress.join('.')}
-        Endereço de Broadcast: ${broadcastAddress.join('.')}
-        IP Inicial: ${ipInicial.join('.')}
-        IP Final: ${ipFinal.join('.')}
-    `);
+    for (let i = 0; i < subnetCount; i++) {
+        const broadcastAddress = calcularEnderecoBroadcast(currentNetworkAddress, newSubnetMask);
+        const ipInicial = calcularIPInicial(currentNetworkAddress);
+        const ipFinal = calcularIPFinal(broadcastAddress);
+
+        resultados.push(`
+            <div>
+                <p class="s">Sub-rede ${i + 1}</p>
+                <p>Endereço de Rede: ${currentNetworkAddress.join('.')}</p>
+                <p>Endereço de Broadcast: ${broadcastAddress.join('.')}</p>
+                <p>IP Inicial: ${ipInicial.join('.')}</p>
+                <p>IP Final: ${ipFinal.join('.')}</p>
+            </div>
+        `);
+ 
+        currentNetworkAddress[3] += increment;
+        if (currentNetworkAddress[3] > 255) {
+            currentNetworkAddress[2] += 1;
+            currentNetworkAddress[3] = 0;
+        }
+    }
+
+    document.getElementById('resultado').innerHTML = `
+        <h3>Sub-redes Divididas</h3>
+        ${resultados.join('')}
+    `;
     closeModal();
 }
 
+
 function calcularNovaMascaraSubrede(classe, subnetBits) {
     const baseMask = calcularMascaraSubrede(classe);
-    let mask = 0;
+    let totalBits = subnetBits;
 
-    for (let i = 0; i < subnetBits; i++) {
-        mask |= (1 << (7 - i));
+    for (let i = 0; i < 4; i++) {
+        if (totalBits > 0) {
+            if (baseMask[i] === 255) {
+                continue;
+            } else {
+                const increment = Math.pow(2, 8 - totalBits) - 1;
+                baseMask[i] += increment;
+                totalBits -= (8 - Math.log2(increment + 1));
+            }
+        }
     }
 
-    if (classe === 'A') {
-        return [255, mask, 0, 0];
-    } else if (classe === 'B') {
-        return [255, 255, mask, 0];
-    } else if (classe === 'C') {
-        return [255, 255, 255, mask];
-    } else {
-        return baseMask;
-    }
+    return baseMask;
 }
- 
+
+function calcularEnderecoRedeComOffset(octetos, subnetMask, offset) {
+    const increment = 256 - subnetMask[3];
+    const offsetAddress = [...octetos];
+
+    offsetAddress[3] += increment * offset;
+    return calcularEnderecoRede(offsetAddress, subnetMask);
+}
+
 function openModal() {
     const modal = document.getElementById('subnetModal');
     modal.style.display = 'block';
