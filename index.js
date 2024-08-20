@@ -97,12 +97,20 @@ function calcularEnderecoBroadcast(octetos, subnetMask) {
 function calcularIPInicial(networkAddress) {
     const ipInicial = [...networkAddress];
     ipInicial[3] += 1;
+    if (ipInicial[3] > 255) {
+        ipInicial[3] = 0;
+        ipInicial[2] += 1;
+    }
     return ipInicial;
 }
 
 function calcularIPFinal(broadcastAddress) {
     const ipFinal = [...broadcastAddress];
     ipFinal[3] -= 1;
+    if (ipFinal[3] < 0) {
+        ipFinal[3] = 255;
+        ipFinal[2] -= 1;
+    }
     return ipFinal;
 }
 
@@ -130,11 +138,13 @@ function calcularSubredes() {
 
     const octetos = ip.split('.').map(Number);
     const classe = determinarClasse(octetos);
-    const subnetBits = Math.ceil(Math.log2(subnetCount));
+    const subnetBits = Math.ceil(Math.log2(subnetCount)); // Quantos bits são necessários para as sub-redes
     const newSubnetMask = calcularNovaMascaraSubrede(classe, subnetBits);
 
+    const hostsPorSubrede = Math.pow(2, 32 - subnetBits - (classe === 'A' ? 8 : classe === 'B' ? 16 : 24)) - 2;
+    const increment = 256 / Math.pow(2, subnetBits); // Incremento para o cálculo das sub-redes
+
     const resultados = [];
-    const increment = 256 - newSubnetMask[3];
     let currentNetworkAddress = calcularEnderecoRede(octetos, newSubnetMask);
 
     for (let i = 0; i < subnetCount; i++) {
@@ -149,14 +159,12 @@ function calcularSubredes() {
                 <p>Endereço de Broadcast: ${broadcastAddress.join('.')}</p>
                 <p>IP Inicial: ${ipInicial.join('.')}</p>
                 <p>IP Final: ${ipFinal.join('.')}</p>
+                <p>Hosts Válidos: ${hostsPorSubrede}</p>
             </div>
         `);
- 
-        currentNetworkAddress[3] += increment;
-        if (currentNetworkAddress[3] > 255) {
-            currentNetworkAddress[2] += 1;
-            currentNetworkAddress[3] = 0;
-        }
+
+        // Incrementa o endereço da sub-rede atual para calcular a próxima
+        currentNetworkAddress = incrementarEndereco(currentNetworkAddress, increment);
     }
 
     document.getElementById('resultado').innerHTML = `
@@ -166,32 +174,41 @@ function calcularSubredes() {
     closeModal();
 }
 
-
 function calcularNovaMascaraSubrede(classe, subnetBits) {
-    const baseMask = calcularMascaraSubrede(classe);
-    let totalBits = subnetBits;
+    let totalBits = (classe === 'A' ? 8 : classe === 'B' ? 16 : 24) + subnetBits;
+    const newMask = [];
 
     for (let i = 0; i < 4; i++) {
-        if (totalBits > 0) {
-            if (baseMask[i] === 255) {
-                continue;
-            } else {
-                const increment = Math.pow(2, 8 - totalBits) - 1;
-                baseMask[i] += increment;
-                totalBits -= (8 - Math.log2(increment + 1));
-            }
+        if (totalBits >= 8) {
+            newMask.push(255);
+            totalBits -= 8;
+        } else if (totalBits > 0) {
+            newMask.push(256 - Math.pow(2, 8 - totalBits));
+            totalBits = 0;
+        } else {
+            newMask.push(0);
         }
     }
 
-    return baseMask;
+    return newMask;
 }
 
-function calcularEnderecoRedeComOffset(octetos, subnetMask, offset) {
-    const increment = 256 - subnetMask[3];
-    const offsetAddress = [...octetos];
+function incrementarEndereco(endereco, incremento) {
+    const novoEndereco = [...endereco];
+    let carry = incremento;
 
-    offsetAddress[3] += increment * offset;
-    return calcularEnderecoRede(offsetAddress, subnetMask);
+    for (let i = 3; i >= 0; i--) {
+        novoEndereco[i] += carry;
+        if (novoEndereco[i] > 255) {
+            carry = Math.floor(novoEndereco[i] / 256);
+            novoEndereco[i] %= 256;
+        } else {
+            carry = 0;
+            break;
+        }
+    }
+
+    return novoEndereco;
 }
 
 function openModal() {
@@ -205,8 +222,7 @@ function closeModal() {
 }
 
 window.onclick = function(event) {
-    const modal = document.getElementById('subnetModal');
-    if (event.target === modal) {
+    if (event.target === document.getElementById('subnetModal')) {
         closeModal();
     }
 }
